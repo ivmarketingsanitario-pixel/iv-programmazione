@@ -1,0 +1,22 @@
+name: Pubblica su Instagram
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: pubblica
+jobs:
+  pubblica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: run
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python3 pubblica.py
+      - if: steps.run.outputs.fatti != ''
+        run: |
+          for n in ${{ steps.run.outputs.fatti }}; do git mv "coda/$n" "pubblicati/$n"; done
+          git config user.name "programmatore IV"; git config user.email "actions@github.com"
+          git commit -m "Pubblicati: ${{ steps.run.outputs.fatti }}" && git push
